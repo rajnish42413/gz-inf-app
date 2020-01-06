@@ -6,6 +6,8 @@ import header from './headerStyle';
 import * as Font from 'expo-font';
 import Loader from './Loader';
 import * as authToken from "./authToken";
+import registerForPushNotificationsAsync from './notification';
+import Axios from 'axios';
 
 export default class OTP extends Component {
 
@@ -101,6 +103,14 @@ verifyotp=async ()=>{
       alert("Some thing went wrong!!!");
     }
   }
+
+ _storeDeviceToken($influencer){
+   let token = registerForPushNotificationsAsync();
+   let {data} = Axios.post(`influencers/${$influencer}/update`,{
+       devive_token:token
+    });
+    console.log(data);
+ }
 
   render(){
     return(

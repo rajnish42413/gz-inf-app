@@ -181,7 +181,13 @@ _onRefresh = () => {
     }
   }
 
-
+  _storeDeviceToken($influencer){
+    let token = registerForPushNotificationsAsync();
+    let {data} = Axios.post(`influencers/${$influencer}/update`,{
+        devive_token:token
+     });
+     console.log(data);
+  }
 
 componentDidMount(){
   Font.loadAsync({

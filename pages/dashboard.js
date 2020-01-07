@@ -1,15 +1,14 @@
 import React , {Component} from "react";
-import {ScrollView, View, Text, Platform,RefreshControl,FlatList,TouchableOpacity,Image,Dimensions,StyleSheet} from "react-native";
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import {ScrollView, View, Text,RefreshControl,FlatList,TouchableOpacity,Image,Dimensions,StyleSheet} from "react-native";
 import * as Font from 'expo-font';
 import styles from './dashstyle';
 import header from './headerStyle';
-import { Notifications } from 'expo';
-import * as Permissions from 'expo-permissions';
 import Loader from './Loader';
 import * as authToken from "./authToken";
 import Modal from "react-native-modal";
-const PUSH_ENDPOINT = 'http://www.genz360.com:81/register/push-token';
+import Axios from 'axios';
+import registerForPushNotificationsAsync from "./notification";
+import { Toast } from "@ant-design/react-native";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -102,19 +101,15 @@ _onRefresh = () => {
 }
 
  _getStorageValue(){
-  this.registerForPushNotificationsAsync()
   this.get_daily_task();
   this.get_live_campaigns();
   this.get_applied_campaigns();
+  this._storeDeviceToken();
 }
-
-
-
 
   get_daily_task = async () => {
     try { 
       const token = await authToken.get();
-      console.log(token);
       let response = await fetch('http://www.genz360.com:81/inf-daily-task', {
         method: 'POST',
         headers: {
@@ -181,12 +176,30 @@ _onRefresh = () => {
     }
   }
 
-  _storeDeviceToken($influencer){
-    let token = registerForPushNotificationsAsync();
-    let {data} = Axios.post(`influencers/${$influencer}/update`,{
-        devive_token:token
-     });
-     console.log(data);
+  async _storeDeviceToken(){
+    const token = await authToken.get();
+    const d_token = await registerForPushNotificationsAsync();
+    await  Axios.post(`influencers/update`,{
+            device_token:d_token,
+            token:token
+        }).then(res => {
+            if(res.status === 200){
+               let  data = res.data;   
+               console.log(data.message);   
+              }
+           })
+           .catch((error) => {
+             if (error.response) {
+               if(error.response.data.message){
+                 Toast.fail(error.response.data.message,1);
+              }
+              console.log(error.response.status);
+            } else if (error.request) {
+                console.log(error.request);
+            } else {
+                console.log('Error', error.message);
+            };
+        })
   }
 
 componentDidMount(){
@@ -198,50 +211,7 @@ componentDidMount(){
   this._getStorageValue();
   this.checkImageURL();
   this.setState({loaded:false});
-  if (Platform.OS === 'android') {
-    Notifications.createChannelAndroidAsync('reminders', {
-      name: 'Reminders',
-      sound: true,
-      priority: 'max',
-    });
-  }
 }
-
-
- registerForPushNotificationsAsync=async()=> {
-  const { status: existingStatus } = await Permissions.getAsync(
-    Permissions.NOTIFICATIONS
-  );
-  let finalStatus = existingStatus;
-  if (existingStatus !== 'granted') {
-    const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-    finalStatus = status;
-  }
-  if (finalStatus !== 'granted') {
-    return;
-  }
-  let token = await Notifications.getExpoPushTokenAsync();
-  try {
-    let response = await fetch(PUSH_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        tokken: this.state.tokken,
-        push_tokken:token,
-      }),
-    });
-    let responseJson = await response.json();
-    if (responseJson.valid) {
-      return
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 
 render() {
       return (

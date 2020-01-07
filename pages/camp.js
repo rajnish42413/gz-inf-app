@@ -333,7 +333,7 @@ export default class Campaign extends Component {
                       <Text style={header.name}>Image</Text>
                     </View> : null}
 
-                    {this.state.img && (this.state.campaign.subtype === '4' || this.state.campaign.subtype === '5') ?
+                    {this.state.img && this.state.campaign.status == 1 && (this.state.campaign.subtype === '4' || this.state.campaign.subtype === '5') ?
                       <View style={[styles.inputSection_icon, { marginLeft: '5%', marginRight: '5%' }]}>
                         <TouchableOpacity style={[styles.prof_img_wrap, { paddingTop: 10, paddingBottom: 10 }]} onPress={() => this.showpicker()}>
                           <Text style={header.name}>UPLOAD IMAGE</Text>
@@ -341,9 +341,9 @@ export default class Campaign extends Component {
                         <Image source={{ uri: 'http://www.genz360.com:81/get-image/' + this.state.photo + '?rnd=' + Math.random() }} style={styles.prof_img} />
                       </View> : null}
 
-                    {this.state.imageData !== null && this.state.img && (this.state.campaign.subtype === '4' || this.state.campaign.subtype === '5')
+                      {this.state.imageData !== null && this.state.img && (this.state.campaign.subtype === '4' || this.state.campaign.subtype === '5')
                       ?
-                      <Image source={this.state.imageSource} style={{ height: 200, marginTop: 10 }} /> :
+                        <Image source={this.state.imageSource} style={{ height: 200, marginTop: 10 }} /> :
                       null}
                   </View>
                   : null
@@ -351,14 +351,17 @@ export default class Campaign extends Component {
 
             </ScrollView>
 
-            {(this.state.campaign.subtype === '4' || this.state.campaign.subtype === '6' || this.state.campaign.subtype === '5') && this.state.status ? <TouchableOpacity style={{ backgroundColor: 'blue', marginTop: 20, marginLeft: 20, marginRight: 20, borderRadius: 8, alignItems: 'center', paddingTop: 10, paddingBottom: 10 }} onPress={() => { this._submit_creative(); this.setState({ loading: true }) }}>
+            {(this.state.campaign.subtype === '4' || this.state.campaign.subtype === '6' || this.state.campaign.subtype === '5') && this.state.campaign.status == 1 && this.state.status ? <TouchableOpacity style={{ backgroundColor: 'blue', marginTop: 20, marginLeft: 20, marginRight: 20, borderRadius: 8, alignItems: 'center', paddingTop: 10, paddingBottom: 10 }} onPress={() => { this._submit_creative(); this.setState({ loading: true }) }}>
               <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'SF' }}>Submit</Text>
             </TouchableOpacity> : null
             }
 
-            <TouchableOpacity style={{ backgroundColor: this.state.applied, marginTop: 20, marginLeft: 20, marginRight: 20, borderRadius: 8, alignItems: 'center', paddingTop: 10, paddingBottom: 10 }} onPress={() => this.state.status ? null : this._apply_for_campaign()}>
+          { this.state.campaign.status === 1 &&
+            <TouchableOpacity 
+            style={{ backgroundColor: this.state.applied, marginTop: 20, marginLeft: 20, marginRight: 20, borderRadius: 8, alignItems: 'center', paddingTop: 10, paddingBottom: 10 }} onPress={() => this.state.status ? null : this._apply_for_campaign()}>
               <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'SF' }}>{this.state.applied_text}</Text>
             </TouchableOpacity>
+          }
 
             <View style={{ paddingBottom: 40 }}></View>
             </>

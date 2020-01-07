@@ -4,10 +4,10 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import styles from './dashstyle';
 import header from './headerStyle';
 import * as Font from 'expo-font';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import Loader from './Loader';
 import * as authToken from "./authToken";
-
+import { SegmentedControl, Toast } from '@ant-design/react-native';
+import Axios from 'axios';
 const Campaign = (props) => (
 
   <TouchableOpacity style={styles.camp_box_wrap} onPress={()=>props.navigation.navigate("CampaignDetails",{camp_id:props.item.campaign_id})} >
@@ -90,6 +90,26 @@ get_campaigns=async ()=>{
   this.setState({loaded:false});
  }
 
+ _campaigns=async (status)=>{
+  await  Axios.get(`campaigns?status=${status}`).then(res => {
+    if(res.status === 200){
+       let  data = res.data;   
+        this.setState({campaign:data})
+      }
+   })
+   .catch((error) => {
+     if (error.response) {
+       if(error.response.data.message){
+         Toast.fail(error.response.data.message,1);
+      }
+      console.log(error.response.status);
+    } else if (error.request) {
+        console.log(error.request);
+    } else {
+        console.log('Error', error.message);
+    };
+   })
+ }
 
 componentDidMount(){
   Font.loadAsync({
@@ -98,11 +118,14 @@ componentDidMount(){
     'SF': require('../assets/fonts/SF.ttf'),
   });
  this.get_campaigns();
-  
 }
 
-  _renderPlaceholder = i => <View style={styles.item} key={i} />;
+onValueChange = value => {
+   let status = value === "Live" ? 1:2;
+   this._campaigns(status);
+};
 
+_renderPlaceholder = i => <View style={styles.item} key={i} />;
   render() {
     return (
       <>
@@ -113,19 +136,26 @@ componentDidMount(){
           onRefresh={this._onRefresh}
         />} 
         style={{backgroundColor:'#fff'}}>
+   
             <View style={header.header_wrapper}>
-            <View style={header.wrap}>
-            <TouchableOpacity onPress={()=>this.props.navigation.navigate('Dashboard')}>
-                <Icon  style={header.backbtn} name="arrow-left" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={header.tagline}>Cash{'\n'}Your Connect</Text>
+                  <View style={header.wrap}>
+                  <TouchableOpacity onPress={()=>this.props.navigation.navigate('Dashboard')}>
+                      <Icon  style={header.backbtn} name="arrow-left" size={24} color="#fff" />
+                      </TouchableOpacity>
+                      <Text style={header.tagline}>Cash{'\n'}Your Connect</Text>
+                  </View>               
             </View>
-            </View>
+            <SegmentedControl
+                     values={['Live', 'Completed']}
+                     tintColor={'#111B74'}
+                     onValueChange={this.onValueChange}
+            />
             <ScrollView style={header.createSection_ws}>
       
                   <View style={[{paddingLeft:20,paddingTop:5}]}> 
                       <Text style={header.heading_g}>Browse Campaigns</Text>
                   </View>
+
             <View style={{ flex: 1, paddingBottom: 20 }}>
 
                   {

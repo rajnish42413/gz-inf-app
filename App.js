@@ -6,21 +6,9 @@ import * as authToken from "./pages/authToken";
 import Loader from './pages/Loader';
 import {createChannels} from './pages/notification'
 import Axios from 'axios';
+import { Toast } from "@ant-design/react-native";
 
 Axios.defaults.baseURL = 'http://www.genz360.com/genz360-admin/api/';
-Axios.interceptors.request.use( async config => {
-  const token = await authToken.get();
-  if (!token) {
-    return config;
-  }
-  if (!config.headers) {
-    config.headers = {};
-  }
-  // config.headers.Authorization = `Bearer ${token}`;
-  return config;
-}, (err) => {
-  return Promise.reject(err);
-})
 
 Axios.interceptors.response.use(
   response => {
